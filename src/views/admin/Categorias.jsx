@@ -78,7 +78,7 @@ export default function GestionCategorias() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tighter">CATEGORÍAS</h1>
-          <p className="text-gray-500 text-sm font-bold">Organiza el menú de Startraining</p>
+          <p className="text-gray-500 text-sm font-bold">Organiza el menú de Resturante-Marios</p>
         </div>
         <button 
           onClick={() => (showForm ? resetForm() : setShowForm(true))}
