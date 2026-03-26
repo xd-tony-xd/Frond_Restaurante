@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../api/supabase';
 import { QRCodeSVG } from 'qrcode.react';
-import { Plus, Download, RefreshCw } from 'lucide-react';
+import { Plus, Download } from 'lucide-react';
 
 export default function GestionMesas() {
 
@@ -23,11 +23,13 @@ export default function GestionMesas() {
   const crearMesa = async (e) => {
     e.preventDefault();
 
-    const token = `mesa-${nuevaMesa.numero_mesa}-${Math.random().toString(36).substr(2,5)}`;
-
     const { error } = await supabase
       .from('mesas')
-      .insert([{ ...nuevaMesa, token_qr: token, activo: true }]);
+      .insert([{ 
+        numero_mesa: nuevaMesa.numero_mesa,
+        estado: 'libre',
+        activo: true
+      }]);
 
     if (!error) {
       setNuevaMesa({ numero_mesa:'', estado:'libre' });
@@ -54,21 +56,9 @@ export default function GestionMesas() {
     fetchMesas();
   };
 
-  const resetQR = async (mesa) => {
+  const descargarQR = (numeroMesa) => {
 
-    const nuevoToken = `mesa-${mesa.numero_mesa}-${Math.random().toString(36).substr(2,5)}`;
-
-    await supabase
-      .from('mesas')
-      .update({ token_qr:nuevoToken })
-      .eq('id', mesa.id);
-
-    fetchMesas();
-  };
-
-  const descargarQR = (idMesa) => {
-
-    const svg = document.getElementById(`qr-mesa-${idMesa}`);
+    const svg = document.getElementById(`qr-mesa-${numeroMesa}`);
     const svgData = new XMLSerializer().serializeToString(svg);
 
     const canvas = document.createElement("canvas");
@@ -85,7 +75,7 @@ export default function GestionMesas() {
       const pngFile = canvas.toDataURL("image/png");
 
       const link = document.createElement("a");
-      link.download = `QR-Mesa-${idMesa}.png`;
+      link.download = `QR-Mesa-${numeroMesa}.png`;
       link.href = pngFile;
       link.click();
 
@@ -156,7 +146,7 @@ export default function GestionMesas() {
         {mesas.map(mesa => {
 
           const urlQR = mesa.activo
-          ? `https://frond-restaurante.vercel.app/menu?mesa=${mesa.numero_mesa}&token=${mesa.token_qr}`
+          ? `https://frond-restaurante.vercel.app/menu?mesa=${mesa.numero_mesa}`
           : `MESA DESHABILITADA`;
 
           return (
@@ -192,18 +182,11 @@ export default function GestionMesas() {
                   <Download size={16}/> PNG
                 </button>
 
-                <button
-                  onClick={()=>resetQR(mesa)}
-                  className="bg-orange-500 text-white py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2"
-                >
-                  <RefreshCw size={16}/> Reset
-                </button>
-
                 {mesa.activo ? (
 
                   <button
                     onClick={()=>deshabilitarMesa(mesa.id)}
-                    className="col-span-2 bg-red-500 text-white py-3 rounded-2xl font-bold text-xs"
+                    className="col-span-1 bg-red-500 text-white py-3 rounded-2xl font-bold text-xs"
                   >
                     Deshabilitar
                   </button>
@@ -212,7 +195,7 @@ export default function GestionMesas() {
 
                   <button
                     onClick={()=>habilitarMesa(mesa.id)}
-                    className="col-span-2 bg-green-500 text-white py-3 rounded-2xl font-bold text-xs"
+                    className="col-span-1 bg-green-500 text-white py-3 rounded-2xl font-bold text-xs"
                   >
                     Habilitar
                   </button>
