@@ -86,7 +86,13 @@ export default function GestionMesas() {
               <button onClick={() => eliminarMesa(mesa.id)} className="text-gray-300 hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
             </div>
             <div className="bg-gray-50 p-4 rounded-3xl mb-4 border-2 border-dashed border-gray-200">
-              <QRCodeSVG id={`qr-mesa-${mesa.numero_mesa}`} value={`https://startraining.app/menu?mesa=${mesa.numero_mesa}&token=${mesa.token_qr}`} size={150} level={"H"} includeMargin={true} />
+              <QRCodeSVG
+  id={`qr-mesa-${mesa.numero_mesa}`}
+  value={`https://frond-restaurante.vercel.app/menu?mesa=${mesa.numero_mesa}&token=${mesa.token_qr}`}
+  size={150}
+  level={"H"}
+  includeMargin={true}
+/>
             </div>
             <h2 className="text-2xl font-black text-gray-800 mb-1">MESA {mesa.numero_mesa}</h2>
             <div className="grid grid-cols-2 gap-2 w-full mt-4">
