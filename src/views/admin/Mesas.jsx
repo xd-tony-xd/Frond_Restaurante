@@ -11,7 +11,12 @@ export default function GestionMesas() {
   useEffect(() => { fetchMesas(); }, []);
 
   async function fetchMesas() {
-    const { data } = await supabase.from('mesas').select('*').order('numero_mesa');
+    const { data } = await supabase
+      .from('mesas')
+      .select('*')
+      .eq('activo', true)
+      .order('numero_mesa');
+
     setMesas(data || []);
   }
 
@@ -22,7 +27,7 @@ export default function GestionMesas() {
 
     const { error } = await supabase
       .from('mesas')
-      .insert([{ ...nuevaMesa, token_qr: token }]);
+      .insert([{ ...nuevaMesa, token_qr: token, activo: true }]);
 
     if (!error) {
       setNuevaMesa({ numero_mesa: '', estado: 'libre' });
@@ -31,9 +36,13 @@ export default function GestionMesas() {
     }
   };
 
-  const eliminarMesa = async (id) => {
-    if (confirm("¿Eliminar esta mesa? Se borrará el acceso por QR.")) {
-      await supabase.from('mesas').delete().eq('id', id);
+  const deshabilitarMesa = async (id) => {
+    if (confirm("¿Deshabilitar esta mesa?")) {
+      await supabase
+        .from('mesas')
+        .update({ activo: false })
+        .eq('id', id);
+
       fetchMesas();
     }
   };
@@ -96,7 +105,7 @@ export default function GestionMesas() {
       {showForm && (
         <form
           onSubmit={crearMesa}
-          className="bg-white p-6 rounded-3xl shadow-xl mb-10 border border-orange-100 animate-in slide-in-from-top duration-300 max-w-md"
+          className="bg-white p-6 rounded-3xl shadow-xl mb-10 border border-orange-100 max-w-md"
         >
           <div className="space-y-4">
             <div>
@@ -138,7 +147,7 @@ export default function GestionMesas() {
                 </span>
 
                 <button
-                  onClick={() => eliminarMesa(mesa.id)}
+                  onClick={() => deshabilitarMesa(mesa.id)}
                   className="text-gray-300 hover:text-red-500 transition-colors"
                 >
                   <Trash2 size={18}/>
