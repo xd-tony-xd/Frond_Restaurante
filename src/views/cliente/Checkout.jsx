@@ -15,52 +15,68 @@ export default function Checkout() {
 
   const procesarPedido = async () => {
 
-    if (cart.length === 0) return;
+  if (cart.length === 0) return;
 
-    setEnviando(true);
+  if (!mesaId) {
+    alert("Mesa inválida");
+    return;
+  }
 
-    // VALIDAR QUE LA MESA ESTÉ ACTIVA
-    const { data: mesa, error: mesaError } = await supabase
-      .from("mesas")
-      .select("*")
-      .eq("numero_mesa", parseInt(mesaId))
-      .eq("activo", true)
-      .single();
+  setEnviando(true);
 
-    if (mesaError || !mesa) {
-      alert("⚠ Esta mesa no está disponible");
-      setEnviando(false);
-      return;
-    }
+  // VALIDAR MESA
+  const { data: mesa, error: mesaError } = await supabase
+    .from("mesas")
+    .select("numero_mesa, activo")
+    .eq("numero_mesa", Number(mesaId))
+    .maybeSingle();
 
-    const { error } = await supabase.rpc('crear_pedido_completo', {
-      p_numero_mesa: parseInt(mesaId),
-      p_total: total,
-      p_notas: "Pedido desde mesa",
-      p_articulos: cart.map(item => ({
-        producto_id: item.id,
-        cantidad: item.cantidad,
-        precio_unitario: item.precio
-      }))
-    });
-
-    if (!error) {
-
-      alert("¡Pedido enviado con éxito!");
-
-      clearCart();
-
-      navigate(`/menu?mesa=${mesaId}`);
-
-    } else {
-
-      alert("Hubo un error: " + error.message);
-
-    }
-
+  if (mesaError) {
+    alert("Error consultando mesa");
     setEnviando(false);
+    return;
+  }
 
-  };
+  if (!mesa) {
+    alert("⚠ Mesa no encontrada");
+    setEnviando(false);
+    return;
+  }
+
+  if (!mesa.activo) {
+    alert("⚠ Esta mesa no está disponible");
+    setEnviando(false);
+    return;
+  }
+
+  // CREAR PEDIDO
+  const { error } = await supabase.rpc('crear_pedido_completo', {
+    p_numero_mesa: Number(mesaId),
+    p_total: total,
+    p_notas: "Pedido desde mesa",
+    p_articulos: cart.map(item => ({
+      producto_id: item.id,
+      cantidad: item.cantidad,
+      precio_unitario: item.precio
+    }))
+  });
+
+  if (!error) {
+
+    alert("¡Pedido enviado con éxito!");
+
+    clearCart();
+
+    navigate(`/menu?mesa=${mesaId}`);
+
+  } else {
+
+    alert("Hubo un error: " + error.message);
+
+  }
+
+  setEnviando(false);
+};
 
   if (cart.length === 0) {
 
